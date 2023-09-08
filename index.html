@@ -1,43 +1,68 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Image to Canvas</title>
 </head>
+
 <body>
     <input type="file" id="imageInput" accept="image/*">
     <canvas id="canvas"></canvas>
-    
+
     <script>
+        function posterizeImage(image) {
+            const levels = 5; // Adjust this value to control the number of color levels
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                // Get the RGB color values
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Apply posterization by reducing the color levels
+                data[i] = Math.floor(r / (256 / levels)) * (256 / levels);
+                data[i + 1] = Math.floor(g / (256 / levels)) * (256 / levels);
+                data[i + 2] = Math.floor(b / (256 / levels)) * (256 / levels);
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const imageInput = document.getElementById('imageInput');
-        
+
         // Event listener to trigger when a new image is selected
-        imageInput.addEventListener('change', function() {
+        imageInput.addEventListener('change', function () {
             const file = imageInput.files[0];
             if (file) {
                 const reader = new FileReader();
-                
+
                 // Event listener to trigger when the image is loaded
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const img = new Image();
                     img.src = e.target.result;
-                    
+
                     // Event listener to trigger when the image is fully loaded
-                    img.onload = function() {
+                    img.onload = function () {
                         // Set canvas dimensions to match the image dimensions
                         canvas.width = img.width;
                         canvas.height = img.height;
-                        
+
                         // Draw the image on the canvas
                         ctx.drawImage(img, 0, 0);
+                        posterizeImage(img)
                     };
                 };
-                
+
                 // Read the selected image file as a data URL
                 reader.readAsDataURL(file);
             }
         });
     </script>
 </body>
+
 </html>
